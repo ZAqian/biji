@@ -1,0 +1,179 @@
+前情回顾
+
+1. 进程线程区别
+2. 通信模型
+ 【1】循环模型：循环接收请求处理请求，每次同时只能处理一个请求
+
+ 【2】IO并发模型：可以同时处理多个IO请求
+
+ 【3】多进程/线程并发 ：可以互不影响的处理多个任务
+
+3. 基于fork的多进程并发
+
+4. ftp文件服务器
+**********************************************************
+
+一. 基于threading的多线程并发
+
+   1.原理 ： 每当一个客户端连接，就创建一个线程处理客户端请求，主线程循环等待其他看客户端请求。客户端退出则对应线程结束。
+
+   2.实现步骤 
+     【1】 创建监听套接字
+     【2】 循环接收客户端连接
+     【3】 有新的客户端连接，创建线程处理客户端请求
+     【4】 主线程继续等待其他客户端连接
+     【5】 客户端退出则对应分支线程退出
+
+
+二. 集成模块完成进程/线程网络并发
+
+  1. 使用方法 
+     
+     import socketserver
+
+     * 通过模块提供的不同的类的组合完成多进程或者多线程，tcp或者udp的并发模型
+  
+  2. 常用类说明
+	
+     TCPServer   创建tcp服务端套接字
+     UDPServer   创建udp服务端套接字
+
+     StreamRequestHandler   处理tcp客户端请求
+     DatagramRequestHandler  处理udp客户端请求
+
+     ForkingMixIn    创建多进程并发
+     ForkingTCPServer   ForkingMixIn + TCPServer
+     ForkingUDPServer   ForkingMixIn + UDPServer
+
+
+     ThreadingMixIn   创建多线程并发
+     ThreadingTCPServer  ThreadingMixIn + TCPServer
+     ThreadingUDPServer  ThreadingMixIn + UDPServer
+
+  3. 使用步骤
+
+     1. 创建服务器类，通过选择继承的类，决定创建TCP或者UDP，多进程或者多线程并发模型
+
+     2. 创建请求处理类，根据服务器类型选择stream还是datagram处理类。重写handle方法，做具体的请求处理
+
+     3. 通过服务器类实例化对象，绑定请求处理类。
+
+     4. 通过服务器对象启动服务
+
+
+三. HTTPSERVER v2.0
+
+  1. 主要功能：
+     【1】 接收客户端（浏览器）http请求
+     【2】 解析客户端发送的请求
+     【3】 根据请求组织数据内容
+     【4】 将内容以http响应的格式发送浏览器
+  
+  2. 升级点：
+     【1】 采用多线程并发，可以满足多个客户端同时发起请求
+     【2】 做基本的请求解析，根据不同的请求内容，返回具体网页
+     【3】 如果用户访问非网页，则做简单处理
+     【4】 通过类将httpserver的功能进行封装
+
+  3. 技术点
+     
+     【1】 tcp多线程并发模型
+     【2】 HTTP协议请求和响应的结构
+	   请求 ： GET  /abc.html  HTTP/1.1
+
+	   响应 ： HTTP/1.1  200  OK
+	           
+		   响应体           
+
+     【3】 类的设计
+          
+	   class  HTTPServer(object):
+		pass 
+           
+
+	   使用：  用户如何用这个类？
+	           httpd = HTTPServer()  
+		   httpd.serve_forever()
+
+	   	   用户需要自己确定什么内容？		   
+		   * 服务器地址
+
+
+四.  协程基础
+
+   1. 定义：纤程，微线程。是为非抢占式多任务产生子程序的计算机组件。协程允许不同入口在不同位置暂停或开始。简单来说，协程就是可以暂停执行的函数
+
+    * yield是实现上述函数的基本关键字，包含yield的函数可以暂停执行，并且返回函数内部继续执行
+
+    * 协程的本质是一个单进程程序，不会使用计算机多核资源。但是可以在应用层形成多个函数任务都被执行的形态，以处理多个任务。
+
+   2. 原理: 记录一个函数的上下文栈帧，协程调度切换时会将记录的上下文保存，在切换回来时进行调取，回复原有的执行内容，以便从暂停位置继续执行。
+
+   
+   3. 协程优缺点
+      
+      优点：【1】 协程完成多任务占用计算机资源少
+            【2】 协程在多任务间切换开销小
+	    【3】 协程是单线程无需进行同步互斥处理等
+      
+      缺点：【1】 无法利用计算机多核资源
+
+
+   4. 常用协程模块 
+      
+     【1】 greenlet 
+         
+	 1. 安装： sudo  pip3 install  greenlet
+
+	 2. 函数 
+	    
+	    greenlet.greenlet(func)
+	    功能 ： 创建协程对象
+	    参数 ：协程函数
+
+	    g.switch()
+	    功能：执行对应的协程函数
+  
+     【2】 gevent
+
+     	1. 安装 ： sudo pip3 install gevent
+
+	2. 函数 
+
+	  gevent.spawn(func,argv,...)
+	  功能： 生成协程对象
+	  参数： func 协程函数
+	         argv 给func传递参数
+          返回值： 协程对象
+
+	  gevent.joinall(list)
+	  功能: 阻塞等待协程事件执行完毕
+	  参数：list 协程对象列表
+
+	  gevent.sleep(sec)
+	  功能: gevent睡眠阻塞
+	  参数：睡眠时间
+
+	  * gevent协程只有在遇到gevent指定的阻塞行为时才会触发协程之间的跳转。
+	
+	3. gevent阻塞触发方法
+	   
+	   from gevent import monkey
+
+	   e.g.  将socket模块下所有阻塞转换为gevent阻塞
+                 
+		 monkey.patch_socket()
+		 from socket import * 
+                 
+		 注意：脚本插件函数执行必须在导入模块之前
+	      
+
+作业 ： 1. 复习下数据库的使用
+        2. 整理进程线程网络内容
+	3. 回顾 httpserver   聊天室   文件服务器思路
+
+
+
+
+
+

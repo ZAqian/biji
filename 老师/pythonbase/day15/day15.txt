@@ -1,0 +1,331 @@
+day14回顾
+  异常
+    语句处理的语句
+      try-except 语句
+          捕获错误通知,把程序的异常状态改回正常状态
+      try-finally 语句
+          执行在正常流程和异常流程下都必须要执行的语句
+      raise 语句
+          抛出(触发) 错误通知,让程序进入到异常流程
+      assert 语句(断言语句)
+          根据条件,决定是否抛出AssertionError类型的错误
+      
+  迭代器
+    iter(obj)    用obj这个可迭代对象返回obj的迭代器
+    next(迭代器)  向迭代器要数据,当没有数据时会收到 
+                 StopIteration异常通知
+    s = "hello"
+    it = iter(s)
+    print(next(it))  # h
+    print(next(it))  # e
+
+
+
+生成器 Generator
+
+什么是生成器:
+  生成器是能够动态提供数据的可迭代对象
+  生成器是在程序运行时生成数据,与容器类不同,它通常不会在内存中
+    保存大量的数据,而是现用现生成
+
+生成器有两种:
+  生成器函数
+  生成器表达式
+
+
+生成器函数:
+  含有yield 语句的函数是生成器函数,此函数被调用将返回一个生成
+    器对象
+  yield 翻译为(产生或生成)
+
+yield 语句
+  语法:
+    yield 表达式
+  说明:
+    yield 只能用于def 函数中,目的是将此函数作为生成器函数使用
+    yield 用来生成数据,供迭代器的next(it) 函数使用 
+  示例见:
+    myyield.py 
+
+  说明:
+    生成器函数的调用将返回一个生成器对象,生成器对象是一个可迭
+       代对象
+    生成器函数调用return会触发一个StopIteration异常(即生成
+       数据结束)
+  示例2见:
+    myinteger.py
+
+
+
+练习:
+  写一个生成器函数 myeven(start, stop) 用来生成从start开始
+  到stop结束(不包含stop)区间内的一系列偶数
+  如:
+    def myeven(start, stop):
+        ...
+
+    events = list(myeven(10, 20))
+    print(events)  #  [10, 12, 14, 16, 18]
+    for x in myeven(21, 30):
+        print(x)  # 打印: 22 24 26 28
+    L = [x**2 for x in myeven(1, 10)]
+    print(L)  # [4, 16, 36, 64]
+
+
+
+
+生成器表达式:
+  语法:
+    ( 表达式 for 变量 in 可迭代对象 [if 真值表达式] )
+  说明:
+    if 子句部分可以省略
+  作用:
+    用推导式形式创建一个新的生成器
+  示例:
+    gen = (x**2 for x in range(1, 5))
+    it = iter(gen)
+    next(it)  # 1
+    next(it)  # 4
+    next(it)  # 9
+    next(it)  # 16
+    next(it)  # StopIteration
+  
+
+
+练习:
+  1. 已知有列表:
+    L = [2, 3, 5, 7]
+    1) 写一个生成器函数,让此函数能够动态的提供数据,数据为原
+       列表的数字的平方加1
+    2) 写一个生成器表达式,让此表达式能够动态提供数据,数据为原
+       列表的数字的平方加1
+    3) 生成一个列表,此列表的数据为原列表的数字的平方加1
+
+说明:
+  生成器函数或生成器表达式调用后返回的生成器,
+    即是生成器也是迭代器
+  示例:
+    gen = (x**2 for x in range(3))
+    it = iter(gen)  # 向生成器获取迭代器,但返回的是gen
+    next(it)  # 0
+    next(gen) # 1
+    next(it) # 4
+    next(gen) # StopIteration
+
+
+
+迭代工具函数:
+zip 函数
+  zip(iter1[, iter2[,iter3, ...]]) 返回一个zip生成器对象
+      此对象用于生成一个元组,此元组的数据分别来自于参数中的
+      每个可迭代对象,生成元组的个数由最小的可迭代对象大小决定
+
+  示例:
+    numbers = [10086, 10000, 10010, 95588]
+    names = ['中国移动', '中国电信', '中国联通']
+    for t in zip(numbers, names):
+        print(t)  # (10086, '中国移动'), (10000, '中国电信')
+
+    d = dict(zip(numbers, names))
+    print(d)  # {10086: '中国移动', 10000:'中国电信', ...}
+    
+    for t in zip(names, numbers, range(1, 1000)):
+        print(t)  # ('中国移动', 10086, 1), (...)
+
+用生成器函数实现myzip函数来代替zip函数,示例见:
+  myzip.py
+
+
+enumerate 函数
+  函数格式:
+    enumerate(iterable, start=0)
+  作用:
+    生成一个枚举可迭代对象,此可迭代对象生成类型为(索引,值)的
+    元组,,默认索引从0开始,也可以用start指定
+  示例:
+    names = ['中国移动', '中国电信', '中国联通']
+    for t in enumerate(names):
+        print(t)  # (0, '中国移动'), (1, '中国电信), (...)
+
+  
+练习:
+  自己写一个与enumerate功能相同的生成器函数myenumerate
+  如:
+    def myenumerate(...):
+        ...
+    
+    names = ['中国移动', '中国电信', '中国联通']
+    for t in myenumerate(names):
+        print(t)  # (0, '中国移动'), (1, '中国电信), (...)
+
+    for t in myenumerate(names, 100):
+        print(t)  # (100, '中国移动'), (101, '中国电信), (...)
+
+
+序列:
+  字符串str, 列表list, 元组tuple, 字节串bytes,
+  字节数组bytearray
+
+
+字节串bytes(也叫做字节序列)
+  作用:
+    存储以字节为单位的数据,
+  说明:
+    字节串是不可以改变的序列
+    字节是0~255之间的整数,用来表示一个字节的取值
+
+字节:
+  字节(byte)是以8个位(bit)为单位的存储单元
+   0b11111111  --> 255
+   0b00000000  --> 0
+  
+
+创建空字节串的字面值:
+  b''
+  b""
+  b''''''
+  b""""""
+创建非空字节串字面值
+  b'ABCD'
+  b"ABCD"
+  b'\x41\x42\x43\x44'
+
+字节串的构造函数:
+  bytes()              生成一个空的字节串,等同于b''
+  bytes(整型可迭代对象)   用可迭代对象初始化一个字符串
+  bytes(整数n)          生成n个值为0的字节串
+  bytes(字符串, encode='utf-8')  用字符串的转换编码
+                        生成一个字节串
+
+  示例:
+    B = bytes()    # B = b''
+    B = bytes(range(65, 80))  # B = b'ABCDEF...'
+    B = bytes(10)             # B = b'\x00\x00\x00...'
+    B = bytes('tarena', 'utf-8')  # B=b'tarena'
+
+字节串的运算
+  +   +=    *     *=  
+  <   <=   >   >=   ==   != 
+  in  , not in 
+  索引index 和 切片
+  注:  字节串为不可变类型,只能索引和切片取值,不能赋值
+
+  示例:
+    b = b'ABC' + b'123'  # b = b'ABC123'
+    b = b'ABC' * 3    # b=b'ABCABCABC'
+    b'ABC' > b'AB'   # True
+    65 in b'ABC'      # True
+    b = b'ABCDEFG'
+    print(b[0])   # 65
+    print(b[::2])  # b'ACEG'
+
+  
+
+内建函数:
+  len(x), max(x), min(x), sum(x), any(x), all(x)
+
+
+
+
+bytes 和 str 的区别:
+  bytes 存储字节(0~255的整数)
+  str 存储unicode字符(0~0x10FFFF的整数)
+
+str 与 bytes 的转换
+       编码(encode)
+  str -----------> bytes
+      b = s.encode(encoding='utf-8')
+
+       解码(decode)
+  bytes -----------> str
+      s = b.decode(encoding='utf-8')
+
+  示例:
+    s = "hello中国"
+    b = s.encode()  # 等同于 s.encode('utf-8')
+    # b = b'hello\xe4\xb8\xad\xe5\x9b\xbd'
+    s2 = b.decode()  # s2 = 'hello中国'
+
+
+
+
+
+字节数组 bytearray
+  可变的字节序列
+
+创建字节数组的构造函数 bytearray
+  bytearray()  创建空的字节数组
+  bytearray(整数n)  创建n个值为0的字节数组
+  bytearray(整型可迭代对象)  用可迭代对象初始化一个字节数组
+  bytearray(字符串，encoding='utf-8')  用字符串的转换编码
+  　　　　　　　　　　　　　生成一个字节数组
+运算符:
+  +  +=   *   *=
+  < <= > >= == !=
+  in, not in
+  索引和切片:
+    注: 字节数组支持索引和切片赋值，规则同列表的索引和切片
+        赋值规则
+
+字节数组的方法见:
+  文档参见:
+    python_base_docs_html/bytearray.html
+  
+练习:
+  写一个程序，从键盘输入一段字符串，用变量s绑定
+  1. 将此字符串转为字节串用变量b绑定,并打印出来
+  2. 打印出字符串s的长度和字节串b的长度
+  3. 将b字节串再转换为字符串用变量s2绑定，再判断s2与s是否相同
+
+练习:
+  1. 看下列函数的输出结果是什么? 为什么?
+    第一个程序:
+      L = [2, 3, 5, 7]
+      A = [x * 10 for x in L]
+      it = iter(A)
+      print(next(it))  # ????
+      L[1] = 333
+      print(next(it))  # ????
+    第二个程序:
+      L = [2, 3, 5, 7]
+      A = (x * 10 for x in L)
+      it = iter(A)
+      print(next(it))  # ????
+      L[1] = 333
+      print(next(it))  # ????
+
+  2. 试写一个myfilter函数,要求此函数与内建的filter函数的功能
+     一致
+    如:
+      def myfilter(...):
+          ...
+      for x in myfilter(lambda x: x%2==1, range(10)):
+          print(x)  # 1 3 5 7 9
+  3. 写一个生成器函数myxrange([start, ] stop[, step]) 来
+     生成一系列整数,
+       要求:
+          myxrange功能与range功能完全相同
+          不允许调用range函数和列表
+  4. 预习:
+      文件 和 面向对象编程
+  
+  5. 分解质因数,输入一个正整数,分析质因数
+    如
+      输入: 90
+    打印:
+      90 = 2*3*3*5
+      (质因数是的指最小能被原数整除的系数(不包括1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
